@@ -39,7 +39,8 @@ const StudentAttendance = () => {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const MODEL_URL = "/models";
+        // Use CDN to avoid local file corruption/LFS issues
+        const MODEL_URL = "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights";
         console.log("🔧 Loading face detection models...");
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),

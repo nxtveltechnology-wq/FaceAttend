@@ -43,27 +43,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as faceapi from "face-api.js";
+import { Student, Teacher, ClassItem } from "@/types";
 
-interface Student {
-  id: string;
-  name: string;
-  roll_number: string;
-  class_id: string;
-  face_embedding: number[] | null;
-  classes: { name: string } | null;
-}
 
-interface Teacher {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-}
-
-interface ClassItem {
-  id: string;
-  name: string;
-}
 
 const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -128,8 +110,8 @@ const AdminDashboard = () => {
   // Load face-api models
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = "/models";
       try {
+        const MODEL_URL = "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights";
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),

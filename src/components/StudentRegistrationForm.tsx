@@ -7,19 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as faceapi from "face-api.js";
+import { Student, ClassItem } from "@/types";
 
-interface ClassItem {
-  id: string;
-  name: string;
-}
 
-interface Student {
-  id: string;
-  name: string;
-  roll_number: string;
-  class_id?: string;
-  face_embedding?: string | null;
-}
 
 interface StudentRegistrationFormProps {
   classes: ClassItem[];
