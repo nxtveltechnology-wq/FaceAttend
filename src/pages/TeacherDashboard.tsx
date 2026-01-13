@@ -246,7 +246,7 @@ const TeacherDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-6">
+      <main className="container mx-auto p-4 md:p-6">
         <Tabs defaultValue="dashboard">
           <TabsList className="mb-6">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -373,6 +373,7 @@ const TeacherDashboard = () => {
                         No attendance records for this date.
                       </div>
                     ) : (
+                      <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -410,6 +411,7 @@ const TeacherDashboard = () => {
                           ))}
                         </TableBody>
                       </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -500,6 +502,7 @@ const TeacherDashboard = () => {
                       <p className="text-sm mt-2">Make sure to have a clear camera or photo ready.</p>
                     </div>
                   ) : (
+                    <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -531,6 +534,7 @@ const TeacherDashboard = () => {
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </div>
 

@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Camera, Upload, X } from "lucide-react";
+import { Loader2, Camera, Upload, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as faceapi from "face-api.js";
 import { Student, ClassItem } from "@/types";
-
-
 
 interface StudentRegistrationFormProps {
   classes: ClassItem[];
@@ -17,14 +21,20 @@ interface StudentRegistrationFormProps {
   initialData?: Student | null;
 }
 
-const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentRegistrationFormProps) => {
+const StudentRegistrationForm = ({
+  classes,
+  onSuccess,
+  initialData,
+}: StudentRegistrationFormProps) => {
   const [name, setName] = useState("");
   const [rollNumber, setRollNumber] = useState("");
   const [classId, setClassId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "processing" | "success" | "error"
+  >("idle");
   const [statusMessage, setStatusMessage] = useState("");
-  
+
   // Media handling
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -48,14 +58,14 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
       setName(initialData.name);
       setRollNumber(initialData.roll_number);
       setClassId(initialData.class_id || "");
-      // We don't pre-fill image/preview as it's complex to load securely/efficiently here, 
-      // user will upload NEW one if they want to change it.
     }
   }, [initialData]);
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
@@ -65,13 +75,17 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
       }
     } catch (error) {
       console.error("Camera error:", error);
-      toast({ title: "Error", description: "Failed to access camera", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to access camera",
+        variant: "destructive",
+      });
     }
   };
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     setCameraActive(false);
@@ -84,12 +98,14 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
-      
+
       if (ctx) {
         ctx.drawImage(video, 0, 0);
         canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], "webcam-capture.jpg", { type: "image/jpeg" });
+            const file = new File([blob], "webcam-capture.jpg", {
+              type: "image/jpeg",
+            });
             setImageFile(file);
             setImagePreview(URL.createObjectURL(file));
             stopCamera();
@@ -119,14 +135,22 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
   const handleSubmit = async () => {
     // Validate inputs
     if (!name || !rollNumber || !classId) {
-      toast({ title: "Error", description: "Please fill all fields", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please fill all fields",
+        variant: "destructive",
+      });
       return;
     }
 
     // Capture photo if required
     if (!initialData && !imageFile) {
-        toast({ title: "Error", description: "Face photo is required for new students", variant: "destructive" });
-        return;
+      toast({
+        title: "Error",
+        description: "Face photo is required for new students",
+        variant: "destructive",
+      });
+      return;
     }
 
     setIsLoading(true);
@@ -142,27 +166,37 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
         setStatusMessage("Analyzing new face...");
         const img = await faceapi.bufferToImage(imageFile);
         const detection = await faceapi
-            .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor();
+          .detectSingleFace(
+            img,
+            new faceapi.TinyFaceDetectorOptions({
+              inputSize: 512,
+              scoreThreshold: 0.5,
+            })
+          )
+          .withFaceLandmarks()
+          .withFaceDescriptor();
 
         if (!detection) {
-            setStatus("error");
-            setStatusMessage("No face detected in new photo!");
-            toast({ title: "Training Failed", description: "No face detected in the image.", variant: "destructive" });
-            setIsLoading(false);
-            return;
+          setStatus("error");
+          setStatusMessage("No face detected in new photo!");
+          toast({
+            title: "Training Failed",
+            description: "No face detected in the image.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
         }
 
         embedding = Array.from(detection.descriptor);
         hasNewFace = true;
-        
+
         // Upload Image
         const fileName = `${Date.now()}-${rollNumber}.jpg`;
         const { error: uploadError } = await supabase.storage
-            .from("face-images")
-            .upload(fileName, imageFile);
-            
+          .from("face-images")
+          .upload(fileName, imageFile);
+
         if (uploadError) throw uploadError;
       }
 
@@ -178,44 +212,46 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
       }
 
       let dbError;
-      
+
       if (initialData?.id) {
         // UPDATE
         const { error } = await supabase
-            .from("students")
-            .update(studentData)
-            .eq("id", initialData.id);
+          .from("students")
+          .update(studentData)
+          .eq("id", initialData.id);
         dbError = error;
       } else {
         // INSERT
-        const { error } = await supabase
-            .from("students")
-            .insert([studentData]);
+        const { error } = await supabase.from("students").insert([studentData]);
         dbError = error;
       }
 
       if (dbError) throw dbError;
 
       setStatus("success");
-      setStatusMessage(initialData ? "Updated successfully!" : "Registered successfully!");
-      toast({ 
-        title: "Success", 
-        description: initialData ? "Student details updated" : "Student registered successfully" 
+      setStatusMessage(
+        initialData ? "Updated successfully!" : "Registered successfully!"
+      );
+      toast({
+        title: "Success",
+        description: initialData
+          ? "Student details updated"
+          : "Student registered successfully",
       });
-      
+
       // Reset if creating new, keep if editing (or close dialog via parent)
       if (!initialData) {
-          setName("");
-          setRollNumber("");
-          setClassId("");
-          clearImage();
+        setName("");
+        setRollNumber("");
+        setClassId("");
+        clearImage();
       }
       onSuccess();
-
     } catch (error: unknown) {
       console.error("Operation error:", error);
       setStatus("error");
-      const message = error instanceof Error ? error.message : "Failed to process request";
+      const message =
+        error instanceof Error ? error.message : "Failed to process request";
       setStatusMessage(message);
       toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
@@ -227,12 +263,20 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Student Name" />
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Student Name"
+        />
       </div>
-      
+
       <div className="space-y-2">
         <Label>Roll Number</Label>
-        <Input value={rollNumber} onChange={(e) => setRollNumber(e.target.value)} placeholder="Roll Number" />
+        <Input
+          value={rollNumber}
+          onChange={(e) => setRollNumber(e.target.value)}
+          placeholder="Roll Number"
+        />
       </div>
 
       <div className="space-y-2">
@@ -243,21 +287,63 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
           </SelectTrigger>
           <SelectContent>
             {classes.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label>Face Photo {initialData ? "(Optional for Update)" : "(Required for Training)"}</Label>
+        <Label>
+          Face Photo{" "}
+          {initialData ? "(Optional for Update)" : "(Required for Training)"}
+        </Label>
         <div className="border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center min-h-[200px] bg-muted/30">
-          
           {cameraActive ? (
             <div className="relative w-full aspect-video bg-black rounded overflow-hidden">
-              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+
+              {/* Camera Instructions Overlay */}
+              <div className="absolute top-2 left-2 right-2">
+                <div className="bg-black/70 border border-green-500/30 px-3 py-2 rounded-lg backdrop-blur-sm">
+                  <p className="text-xs font-semibold text-white mb-1.5">
+                    Capture Checklist:
+                  </p>
+                  <div className="space-y-1 text-xs text-white/90">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                      <span>Face well-lit</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                      <span>Centered in frame</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                      <span>Looking straight</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                      <span>No glasses/mask</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                <Button type="button" onClick={capturePhoto} variant="destructive">
+                <Button
+                  type="button"
+                  onClick={capturePhoto}
+                  variant="destructive"
+                >
                   <Camera className="w-4 h-4 mr-2" />
                   Capture
                 </Button>
@@ -265,9 +351,18 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
             </div>
           ) : imagePreview ? (
             <div className="relative w-full aspect-video bg-black rounded overflow-hidden group">
-              <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-full object-contain"
+              />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button type="button" variant="destructive" size="icon" onClick={clearImage}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearImage}
+                >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
@@ -280,7 +375,11 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
                   Use Webcam
                 </Button>
                 <div className="relative">
-                  <Button type="button" variant="outline" className="cursor-pointer">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="cursor-pointer"
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Photo
                   </Button>
@@ -292,30 +391,45 @@ const StudentRegistrationForm = ({ classes, onSuccess, initialData }: StudentReg
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Upload or capture a clear front-facing photo.</p>
+              <p className="text-xs text-muted-foreground">
+                Upload or capture a clear front-facing photo.
+              </p>
             </div>
           )}
         </div>
 
         {statusMessage && (
-          <div className={`text-sm font-medium ${
-            status === 'error' ? 'text-destructive' : 
-            status === 'success' ? 'text-green-600' : 'text-primary'
-          } flex items-center gap-2 mt-2`}>
-            {status === 'processing' && <Loader2 className="w-3 h-3 animate-spin" />}
+          <div
+            className={`text-sm font-medium ${
+              status === "error"
+                ? "text-destructive"
+                : status === "success"
+                ? "text-green-600"
+                : "text-primary"
+            } flex items-center gap-2 mt-2`}
+          >
+            {status === "processing" && (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            )}
             {statusMessage}
           </div>
         )}
       </div>
 
-      <Button onClick={handleSubmit} className="w-full" disabled={isLoading || (!initialData && !imageFile)}>
+      <Button
+        onClick={handleSubmit}
+        className="w-full"
+        disabled={isLoading || (!initialData && !imageFile)}
+      >
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             Processing...
           </>
+        ) : initialData ? (
+          "Update Student Details"
         ) : (
-          initialData ? "Update Student Details" : "Register Student & Train Face"
+          "Register Student & Train Face"
         )}
       </Button>
     </div>

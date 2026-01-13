@@ -77,7 +77,7 @@ const Index = () => {
           </div>
 
           {/* Stats */}
-          <div className="mt-12 grid grid-cols-3 gap-4 text-center">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="border-2 border-border p-4">
               <p className="text-3xl font-bold">99.2%</p>
               <p className="text-sm text-muted-foreground">Accuracy Rate</p>

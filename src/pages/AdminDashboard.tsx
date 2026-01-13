@@ -328,7 +328,7 @@ const AdminDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-6">
+      <main className="container mx-auto p-4 md:p-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin" />
@@ -416,7 +416,8 @@ const AdminDashboard = () => {
                     </Dialog>
                   </CardHeader>
                   <CardContent>
-                    <Table>
+                    <div className="overflow-x-auto">
+                      <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -470,7 +471,8 @@ const AdminDashboard = () => {
                           </TableRow>
                         )}
                       </TableBody>
-                    </Table>
+                      </Table>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -568,7 +570,8 @@ const AdminDashboard = () => {
                     </Dialog>
                   </CardHeader>
                   <CardContent>
-                    <Table>
+                    <div className="overflow-x-auto">
+                      <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -602,7 +605,8 @@ const AdminDashboard = () => {
                           </TableRow>
                         )}
                       </TableBody>
-                    </Table>
+                      </Table>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -642,7 +646,7 @@ const AdminDashboard = () => {
                     </Dialog>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {classes.map((c) => (
                         <div
                           key={c.id}
